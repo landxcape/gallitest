@@ -82,7 +82,7 @@ class _MapWidgetState extends State<MapWidget> {
       'fillSourceId',
       GeojsonSourceProperties(
         data: {
-          'type': 'geojson',
+          'type': 'FeatureCollection',
           'features': <Map<String, dynamic>>[],
         },
         lineMetrics: false,
@@ -92,7 +92,7 @@ class _MapWidgetState extends State<MapWidget> {
       'lineSourceId',
       GeojsonSourceProperties(
         data: {
-          'type': 'geojson',
+          'type': 'FeatureCollection',
           'features': <Map<String, dynamic>>[],
         },
         lineMetrics: true,
@@ -102,7 +102,7 @@ class _MapWidgetState extends State<MapWidget> {
       'symbolSourceId',
       GeojsonSourceProperties(
         data: {
-          'type': 'geojson',
+          'type': 'FeatureCollection',
           'features': <Map<String, dynamic>>[],
         },
         lineMetrics: false,
