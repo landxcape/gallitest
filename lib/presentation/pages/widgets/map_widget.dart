@@ -74,12 +74,6 @@ class _MapWidgetState extends State<MapWidget> {
     return stationMarkerIcon;
   }
 
-  void _onStylesLoadedCallback(MapLibreMapController controller) async {
-    final stationMarkerIcon = await _initCustomMarkers();
-    controller.addImage('symbolIcon', stationMarkerIcon);
-    await controller.setSymbolIconAllowOverlap(true);
-  }
-
   addFill() async {
     await controller.addGeoJsonSource(
       'fillSourceId',
@@ -117,10 +111,6 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   updateFill() async {
-    // await controller.removeLayer("fillLayerId");
-    // await controller.removeSource("fillSourceId");
-    // await Future.delayed(const Duration(seconds: 2));
-
     await controller.setGeoJsonSource(
       'fillSourceId',
       {
@@ -147,14 +137,6 @@ class _MapWidgetState extends State<MapWidget> {
         ],
       },
     );
-    // await controller.addFillLayer(
-    //   'fillSourceId',
-    //   'fillLayerId',
-    //   FillLayerProperties(
-    //     fillColor: '#0c0caa',
-    //     fillOpacity: 0.8,
-    //   ),
-    // );
   }
 
   @override
@@ -164,25 +146,29 @@ class _MapWidgetState extends State<MapWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return MapLibreMap(
-      initialCameraPosition: CameraPosition(
-          target: LatLng(27.687458775707956, 85.32641149144914), zoom: 14),
-      onMapCreated: (c) async {
+    return GalliMap(
+      size: (height: double.maxFinite, width: double.maxFinite),
+      authToken: "xyz",
+      showCurrentLocation: true,
+      showSearchWidget: false,
+      showThree60Widget: false,
+      showCurrentLocationButton: true,
+      initialCameraPostion:
+          CameraPosition(target: Constants.defaultLatLng, zoom: 13),
+      onMapCreated: (c) {
         controller = c;
-        // await Future.delayed(const Duration(seconds: 5));
-        _onStylesLoadedCallback(c);
         addFill();
-        debugPrint("done");
       },
-      styleString: "https://map-init.gallimap.com/styles/light/style.json",
-      onMapClick: (point, latlng) async {
-        updateFill();
-        print("latlng: $latlng");
-      },
+      rotateGestureEnabled: false,
+      tiltGestureEnabled: false,
+      showCompass: false,
       minMaxZoomPreference: const MinMaxZoomPreference(
         Constants.minZoomLevel,
         Constants.maxZoomLevel,
       ),
+      onMapClick: (latLng) {
+        updateFill();
+      },
     );
   }
 }
