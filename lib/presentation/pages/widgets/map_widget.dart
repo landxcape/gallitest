@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:galli_vector_package/galli_vector_package.dart';
 import 'package:gallitest/app/constants.dart';
+import 'package:gallitest/app_env.dart';
 
 class MapWidget extends StatefulWidget {
   const MapWidget({
@@ -215,7 +216,7 @@ class _MapWidgetState extends State<MapWidget> {
   Widget build(BuildContext context) {
     return GalliMap(
       size: (height: double.maxFinite, width: double.maxFinite),
-      authToken: '',
+      authToken: AppEnv.galliAuthToken,
       showCurrentLocation: true,
       showSearchWidget: false,
       showThree60Widget: false,
