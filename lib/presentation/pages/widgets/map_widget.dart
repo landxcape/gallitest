@@ -17,13 +17,15 @@ class MapWidget extends StatefulWidget {
 }
 
 class _MapWidgetState extends State<MapWidget> {
+  late MapLibreMapController controller;
   static Future<Uint8List> getUint8ListFromSvg(
     String assetName, {
     Size size = const Size(48, 48),
     Color color = const Color(0xFF000000),
     BlendMode blendMode = BlendMode.srcIn,
   }) async {
-    final byte = await getBytesFromSvg(assetName, size: size, color: color, blendMode: blendMode);
+    final byte = await getBytesFromSvg(assetName,
+        size: size, color: color, blendMode: blendMode);
     return byte.buffer.asUint8List();
   }
 
@@ -38,7 +40,8 @@ class _MapWidgetState extends State<MapWidget> {
       null,
     );
 
-    double devicePixelRatio = WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
+    double devicePixelRatio =
+        WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
     int width = (size.width * devicePixelRatio).toInt();
     int height = (size.height * devicePixelRatio).toInt();
 
@@ -74,71 +77,11 @@ class _MapWidgetState extends State<MapWidget> {
   void _onStylesLoadedCallback(MapLibreMapController controller) async {
     final stationMarkerIcon = await _initCustomMarkers();
     controller.addImage('symbolIcon', stationMarkerIcon);
-
     await controller.setSymbolIconAllowOverlap(true);
+  }
 
-    await controller.addSource(
-      'fillSourceId',
-      GeojsonSourceProperties(
-        data: {
-          'type': 'geojson',
-          'features': <Map<String, dynamic>>[],
-        },
-        lineMetrics: false,
-      ),
-    );
-    await controller.addSource(
-      'lineSourceId',
-      GeojsonSourceProperties(
-        data: {
-          'type': 'geojson',
-          'features': <Map<String, dynamic>>[],
-        },
-        lineMetrics: true,
-      ),
-    );
-    await controller.addSource(
-      'symbolSourceId',
-      GeojsonSourceProperties(
-        data: {
-          'type': 'geojson',
-          'features': <Map<String, dynamic>>[],
-        },
-        lineMetrics: false,
-      ),
-    );
-
-    await controller.addFillLayer(
-      'fillSourceId',
-      'fillLayerId',
-      FillLayerProperties(
-        fillColor: '#0c0caa',
-        fillOpacity: 0.8,
-      ),
-    );
-    await controller.addLineLayer(
-      'lineSourceId',
-      'lineLayerId',
-      LineLayerProperties(
-        lineColor: '#F0CF0F',
-        lineWidth: 8,
-        lineOpacity: 0.8,
-        lineCap: 'round',
-        lineJoin: 'round',
-      ),
-    );
-    await controller.addSymbolLayer(
-      'symbolSourceId',
-      'symbolLayerId',
-      SymbolLayerProperties(
-        iconImage: [
-          Expressions.get,
-          'iconName',
-        ],
-      ),
-    );
-
-    controller.setGeoJsonSource(
+  addFill() async {
+    await controller.addGeoJsonSource(
       'fillSourceId',
       {
         'type': 'FeatureCollection',
@@ -163,8 +106,23 @@ class _MapWidgetState extends State<MapWidget> {
         ],
       },
     );
-    controller.setGeoJsonSource(
-      'lineSourceId',
+    await controller.addFillLayer(
+      'fillSourceId',
+      'fillLayerId',
+      FillLayerProperties(
+        fillColor: '#0c0caa',
+        fillOpacity: 0.8,
+      ),
+    );
+  }
+
+  updateFill() async {
+    // await controller.removeLayer("fillLayerId");
+    // await controller.removeSource("fillSourceId");
+    // await Future.delayed(const Duration(seconds: 2));
+
+    await controller.setGeoJsonSource(
+      'fillSourceId',
       {
         'type': 'FeatureCollection',
         'features': [
@@ -173,37 +131,30 @@ class _MapWidgetState extends State<MapWidget> {
             'id': 'id',
             'properties': {},
             'geometry': <String, dynamic>{
-              'type': 'LineString',
+              'type': 'Polygon',
               'coordinates': [
-                [85.32057488784143, 27.693956723414807],
-                [85.32379363054457, 27.69247483388617],
-                [85.32928673679733, 27.689890853468754],
-                [85.33550922210189, 27.688256588115742],
+                [
+                  [85.32422280900494, 27.711491975561685],
+                  [85.33074582639657, 27.681986629659708],
+                  [85.33370700560444, 27.68650869679327],
+                  [85.32988761900164, 27.689092843292404],
+                  [85.32641149144914, 27.687458775707956],
+                  [85.32422280900494, 27.711491975561685],
+                ]
               ],
             },
           },
         ],
       },
     );
-    controller.setGeoJsonSource(
-      'symbolSourceId',
-      {
-        'type': 'FeatureCollection',
-        'features': [
-          {
-            'type': 'Feature',
-            'id': 'id',
-            'properties': {
-              'iconName': 'symbolIcon',
-            },
-            'geometry': <String, dynamic>{
-              'type': 'Point',
-              'coordinates': [85.32654030681317, 27.684342689879042],
-            },
-          },
-        ],
-      },
-    );
+    // await controller.addFillLayer(
+    //   'fillSourceId',
+    //   'fillLayerId',
+    //   FillLayerProperties(
+    //     fillColor: '#0c0caa',
+    //     fillOpacity: 0.8,
+    //   ),
+    // );
   }
 
   @override
@@ -213,25 +164,25 @@ class _MapWidgetState extends State<MapWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return GalliMap(
-      size: (height: double.maxFinite, width: double.maxFinite),
-      authToken: '',
-      showCurrentLocation: true,
-      showSearchWidget: false,
-      showThree60Widget: false,
-      showCurrentLocationButton: true,
-      initialCameraPostion: CameraPosition(target: Constants.defaultLatLng, zoom: 13),
-      onMapCreated: (controller) {
-        _onStylesLoadedCallback(controller);
+    return MapLibreMap(
+      initialCameraPosition: CameraPosition(
+          target: LatLng(27.687458775707956, 85.32641149144914), zoom: 14),
+      onMapCreated: (c) async {
+        controller = c;
+        // await Future.delayed(const Duration(seconds: 5));
+        _onStylesLoadedCallback(c);
+        addFill();
+        debugPrint("done");
       },
-      rotateGestureEnabled: false,
-      tiltGestureEnabled: false,
-      showCompass: false,
+      styleString: "https://map-init.gallimap.com/styles/light/style.json",
+      onMapClick: (point, latlng) async {
+        updateFill();
+        print("latlng: $latlng");
+      },
       minMaxZoomPreference: const MinMaxZoomPreference(
         Constants.minZoomLevel,
         Constants.maxZoomLevel,
       ),
-      onMapClick: (latLng) {},
     );
   }
 }
